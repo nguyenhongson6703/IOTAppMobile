@@ -1,12 +1,12 @@
 import CustomButton from "../Components/CustomButton";
 import { Text, View, StyleSheet, Image, TextInput, KeyboardAvoidingView, Pressable } from "react-native";
 
-function LoginScreen(){
+function LoginScreen({navigation}){
     function navigationToSignUp(){
-
+        navigation.navigate('SignUp');
     }
     function navigationToMainScreen(){
-
+        navigation.navigate('Detail')
     }
     return (
         <KeyboardAvoidingView style = {styles.containerRoot}  behavior="position">

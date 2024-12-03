@@ -2,9 +2,9 @@ import CustomButton from "../Components/CustomButton";
 import {View, Text , StyleSheet,   Image ,
     TextInput, KeyboardAvoidingView, } from "react-native";
 
-function SignUpScreen(){
+function SignUpScreen({navigation}){
     function navigationToSignUp(){
-
+        navigation.navigate('Login');
     }
 
     return (
