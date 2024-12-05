@@ -1,10 +1,86 @@
+import { useState } from "react";
 import CustomButton from "../Components/CustomButton";
 import {View, Text , StyleSheet,   Image ,
-    TextInput, KeyboardAvoidingView, } from "react-native";
+    TextInput, KeyboardAvoidingView,
+    Alert, } from "react-native";
 
 function SignUpScreen({navigation}){
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [passwordAgain, setPasswordAgain] = useState('');
+    const signUpHandler = async () => {
+        try{
+            const response = await fetch('http://167.71.195.130/api/v1/auth/register', 
+                {
+                    method: 'POST', 
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }, 
+                    body: JSON.stringify({
+                        username: username, 
+                        password: password
+                    })
+                }
+            );
+            const data = await response.json();
+            Alert.alert(
+                "Thông báo", 
+                data.message, 
+                [
+                    {
+                        text: 'Đến đăng nhập', 
+                        onPress: () => {
+                            navigation.navigate('Login');
+                        }
+                    }, 
+                    {
+                        text: 'Tiếp tục đăng kí', 
+                        onPress: () => {
+                            setUsername('');
+                            setPassword('');
+                            setPasswordAgain('');
+
+                        }
+                    }
+                ]
+            )
+           
+        }catch(error){
+            console.log('Error', error);
+            Alert.alert(
+                "Thông báo", 
+                "Đăng nhập thất bại. Vui lòng thử lại", 
+                [
+                    {
+                        text: 'OK', 
+                        onPress: () => {
+                            setUsername('');
+                            setPassword('');
+                            setPasswordAgain('');
+                        }
+                    }
+                ]
+            )
+            
+        }
+    }
     function navigationToSignUp(){
-        navigation.navigate('Login');
+        // navigation.navigate('Login');
+        if(password === passwordAgain && username != ''){
+            signUpHandler();
+            
+        }else{
+            Alert.alert(
+                "Cảnh báo", 
+                "Mật khẩu không hợp lệ hãy kiểm tra lại", 
+                [
+                    {text: 'OK', onPress: () => { 
+                        setPassword('');
+                        setPasswordAgain('');
+                    }}
+                ]
+            )
+        }
     }
 
     return (
@@ -18,13 +94,24 @@ function SignUpScreen({navigation}){
                 <Text style = {styles.title}>Đăng ký</Text>
                 <View style = {styles.containerInput}>
                     <View style = {styles.outerInput}>
-                        <TextInput style = {styles.inputUser} placeholder="Nhập vào tên đăng nhập"></TextInput>
+                        <TextInput
+                         value={username}
+                         onChangeText={(text) => setUsername(text)}
+                         style = {styles.inputUser} placeholder="Nhập vào tên đăng nhập"></TextInput>
+                    </View>
+                    <View  style = {styles.outerInput}>
+                        <TextInput
+                        secureTextEntry={true}
+                        value={password}
+                        onChangeText={(text) => setPassword(text)} 
+                        style = {styles.inputPassword} placeholder="Nhập vào mật khẩu"></TextInput>
                     </View>
                     <View style = {styles.outerInput}>
-                        <TextInput style = {styles.inputPassword} placeholder="Nhập vào mật khẩu"></TextInput>
-                    </View>
-                    <View style = {styles.outerInput}>
-                        <TextInput style = {styles.inputPasswordAth} placeholder="Xác nhận mật khẩu"></TextInput>
+                        <TextInput 
+                        secureTextEntry={true}
+                        value={passwordAgain}
+                        onChangeText={(text) => setPasswordAgain(text)}
+                        style = {styles.inputPasswordAth} placeholder="Xác nhận mật khẩu"></TextInput>
                     </View>
                 </View>
                 

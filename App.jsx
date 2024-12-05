@@ -15,34 +15,44 @@ import SettingScreen from './screen/SetUpScreen';
 import DetailScreen from './screen/Detail';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import MaterialIcons  from '@react-native-vector-icons/material-icons';
+import MainTabs from './MainTab';
+import { AppProvider } from './AppContext';
 
 const Stack = createNativeStackNavigator();
-
+const BottomTabs = createBottomTabNavigator();
 function App() {
+  
 
   return ( 
     <>
-      <NavigationContainer>
-        <Stack.Navigator
-          screenOptions={{
-            headerStyle: {backgroundColor: '#02A9F7'}
-          }
-          }
-        >
-          <Stack.Screen name='Login' component={LoginScreen} options={{headerShown: false}}>
+      <AppProvider>
+        <NavigationContainer>
+          <Stack.Navigator
+            screenOptions={{
+              headerStyle: {backgroundColor: '#02A9F7'}, 
+              headerTintColor: 'white',
+              headerTitle: ""
 
-          </Stack.Screen>
-          <Stack.Screen name='SignUp' component={SignUpScreen} options={{headerShown: false}}>
+            }
+            }
+          >
+            <Stack.Screen name='Login' component={LoginScreen} options={{headerShown: true}}>
 
-          </Stack.Screen>
-          <Stack.Screen name='Detail' component={DetailScreen} options={{headerShown: false}}/>
-        </Stack.Navigator>
-      </NavigationContainer>
+            </Stack.Screen>
+            <Stack.Screen name='SignUp' component={SignUpScreen} options={{headerShown: true}}>
 
+            </Stack.Screen>
+            <Stack.Screen name='Detail' component={DetailScreen} options={{headerShown: true}}/>
+            <Stack.Screen name='Main' component={MainTabs} options={{headerShown: false}}/>
+          </Stack.Navigator>
+
+          
+        </NavigationContainer>
+      </AppProvider>
       
     </>
-    
-      
     
   );
 }

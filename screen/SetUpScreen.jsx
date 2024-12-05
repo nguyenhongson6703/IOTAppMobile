@@ -1,13 +1,81 @@
 import MaterialIcons  from '@react-native-vector-icons/material-icons';
-import {Text, View , Image, StyleSheet , Switch, Button} from "react-native";
+import {Text, View , Image, StyleSheet , Switch, Button, Alert} from "react-native";
 import Slider from '@react-native-community/slider';
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useAppContext } from '../AppContext';
 
 
-function SettingScreen(){
-
+function SettingScreen({navigation}){
+    const {state, setState} = useAppContext();
     const [isEnabled, setIsEnabled] = useState(false);
+    
     const toggleSwitch = () => setIsEnabled(previousState => !previousState);
+
+    const [sensitivity, setSensitivity] = useState(0);
+    const getSensitivity = async () => {
+        try{
+          
+            const url = `http://167.71.195.130/api/v1/auth/sensitivity?token=${state.token}`
+            const response = await fetch(url, { method: 'GET'});
+            const data = await response.json();
+            setSensitivity(data.sensitivity);
+          }catch(error){
+            console.log('Error', error);
+            Alert.alert(
+              "Thông báo", 
+              "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!", 
+              [
+                {text: 'OK', 
+                  onPress: () => {
+                    navigation.navigate('Login');
+                  }
+                }
+              ]
+            )
+    
+          }
+    }
+    const upDateSensitivity = async (newSensitivity) => {
+        try{
+           
+            const url = `http://167.71.195.130/api/v1/auth/sensitivity?token=${state.token}&sensitivity=${parseInt(newSensitivity)}`
+            const response = await fetch(url, { method: 'POST'});
+            const data = await response.json();
+            setSensitivity(newSensitivity);
+            Alert.alert(
+                "Thông báo", 
+                "Thay đổi giá trị độ nhạy thành công" , 
+                [
+                    {
+                        text: 'OK', 
+                        onPress: () => {}
+                    }
+                ]
+            );
+            console.log("Message", data.message);
+          }catch(error){
+            console.log('Error', error);
+            Alert.alert(
+              "Thông báo", 
+              "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!", 
+              [
+                {text: 'OK', 
+                  onPress: () => {
+                    navigation.navigate('Login');
+                  }
+                }
+              ]
+            )
+    
+          }
+    }
+    useEffect(() => {   
+        getSensitivity();
+
+    }, [state.token]);
+    function logoutHandler(){
+        navigation.navigate('Login');
+    }
     return (
         <View style = {styles.settingContainer}>
             <View style = {styles.containerInfo}>
@@ -29,9 +97,12 @@ function SettingScreen(){
                     </View>
                     <View style = {styles.containerSettingItemButton}>
                         <Slider
+                        value={sensitivity}
+                        onSlidingComplete={(newValue) => upDateSensitivity(newValue)}
                         style={styles.sensitiveSlider}
                         minimumValue={0}
                         maximumValue={30}
+                        step={1}
                         minimumTrackTintColor="#02A9F7"
                         maximumTrackTintColor="#02A9F7"
                         thumbTintColor='#02A9F7'
@@ -72,7 +143,7 @@ function SettingScreen(){
                     
                 </View>
                 <View style = {styles.containerButton}>
-                    <Button title="Log out"/>
+                    <Button title="Log out" onPress={() => logoutHandler()}/>
                 </View>
 
 

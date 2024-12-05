@@ -1,9 +1,13 @@
 import Video from "react-native-video";
 import { Text, View, StyleSheet , Pressable} from "react-native";
 import MaterialIcons  from '@react-native-vector-icons/material-icons';
+import { useEffect } from "react";
+import { formatDate } from "../Components/HistoryItem";
 
 
-function DetailScreen(){
+function DetailScreen({route}){
+    const {url, timeStart} = route.params; 
+
     return (
         <>
             <View style = {styles.rootContainer}>
@@ -17,10 +21,10 @@ function DetailScreen(){
                 <View style = {styles.contentContainer}>
                     <Video paused= {false} controls = {true} renderLoader = {() => (
                         <View>
-                            <Video paused = {false} controls = {false}  style = {styles.video} source={require("../asset/video/loading-video.mp4") }/>
+                            <Video repeat={true} paused = {false} controls = {false}  style = {styles.video} source={require("../asset/video/loading-video.mp4") }/>
 
                         </View>)}
-                    style = {styles.video} source={{uri: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'}}/>
+                    repeat={true} style = {styles.video} source={{uri: url}}/>
                 </View>
                 <View style = {styles.containerDetail} >
 
@@ -32,7 +36,7 @@ function DetailScreen(){
                             <View>
                                 <MaterialIcons name="share-arrival-time" size={24} color= '#02A9F7' />
                             </View>                         
-                            <Text style = {[styles.textDetailItem , styles.normalText]}><Text style = {styles.highlightText}>Thời gian </Text> 20:21:22 12/12/2024</Text>
+                            <Text style = {[styles.textDetailItem , styles.normalText]}><Text style = {styles.highlightText}>Thời gian </Text> {formatDate(timeStart)}</Text>
                         </View>
                         <View style = {[styles.flexRow , styles.containerDetailItem]}>
                             <View>

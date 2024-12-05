@@ -1,11 +1,17 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, StyleSheet, Pressable } from "react-native";
 import MaterialIcons  from '@react-native-vector-icons/material-icons';
 import { VLCPlayer } from 'react-native-vlc-media-player';
+import Video from "react-native-video";
 
 const videoSource =
   'https://skynewsau-live.akamaized.net/hls/live/2002689/skynewsau-extra1/master.m3u8';
 function MainScreen(){
+    const [loading, setLoading] = useState(true);
+    const handleOnLoad = () => {
+      setLoading(false);
+    }
+
     return (
         <View style = {styles.rootContainer}>
             <View style={styles.container}>
@@ -16,7 +22,21 @@ function MainScreen(){
                 
             </View>
             <View style={styles.contentContainer}>
-                <VLCPlayer autoplay = {true} style= {styles.video} source={{uri: videoSource} }/>
+            {loading===true ? (
+              <Video
+                repeat={true}
+                paused={false}
+                controls={false}
+                style={styles.video}
+                source={require("../asset/video/loading-video.mp4")}
+              />
+            ):null}            
+              <VLCPlayer
+               onLoad={handleOnLoad}
+                autoplay={true}
+                style={[loading ?{width: 0 , height: 0}:styles.video]}
+                source={{ uri: videoSource }}
+              />
             </View>
         </View>
     )
