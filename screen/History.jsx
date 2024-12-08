@@ -7,10 +7,9 @@ import { useEffect, useState } from "react";
 function HistoryScreen({navigation}){
     const {state, setState} = useAppContext();
     const [histories, setHistories] = useState([]);
-    function navigateToDetail(url, timeStart){
+    function navigateToDetail(uuid){
       navigation.navigate('Detail', {
-        url: url, 
-        timeStart: timeStart
+        uuid: uuid
       });
     }
     const [loading, setLoading] = useState(true);
@@ -40,11 +39,10 @@ function HistoryScreen({navigation}){
       }
     }
     useEffect(() => {
-      console.log('Token in history :',  state.token);
       getAllHistories();
     }, []);
     const renderItem = ({item}) => (
-      <HistoryItem navigateToDetail={() => {navigateToDetail(item.video, item.beginTime)}}
+      <HistoryItem navigateToDetail={() => {navigateToDetail(item.uuid)}}
         urlImage={item.thumbnail} timeStart={item.beginTime} timeEnd={item.endTime} key={item.uuid}  />
     )
     return (

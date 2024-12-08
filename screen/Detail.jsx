@@ -1,12 +1,50 @@
 import Video from "react-native-video";
 import { Text, View, StyleSheet , Pressable} from "react-native";
 import MaterialIcons  from '@react-native-vector-icons/material-icons';
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { formatDate } from "../Components/HistoryItem";
+import { useAppContext } from "../AppContext";
 
 
 function DetailScreen({route}){
-    const {url, timeStart} = route.params; 
+    const {state, setState} = useAppContext();
+    const {uuid} = route.params; 
+    const [history , setHistory] = useState({});
+    const [loading , setLoading] = useState(true);
+    const getHistory = async () => {
+        console.log("uuid: ", uuid);
+        console.log("State token", state.token);
+        try{
+            console.log("uuid: ", uuid);
+            console.log("token:", state.token);
+            const url = `http://167.71.195.130/api/v1/detect/get?token=${state.token}&actionId=${uuid}`
+            const response = await fetch(url, { method: 'GET'});
+            const data = await response.json();
+            setHistory(data);
+            console.log('History data: ', data);
+            setLoading(false);
+          }catch(error){
+            console.log('Error', error);
+            Alert.alert(
+              "Thông báo", 
+              "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!", 
+              [
+                {text: 'OK', 
+                  onPress: () => {
+                    navigation.navigate('Login');
+                  }
+                }
+              ]
+            );
+            setLoading(true);
+            
+    
+          }
+    }
+    useEffect(() =>{
+        getHistory();
+    }, [uuid]);
+
 
     return (
         <>
@@ -19,12 +57,18 @@ function DetailScreen({route}){
                     
                 </View>
                 <View style = {styles.contentContainer}>
-                    <Video paused= {false} controls = {true} renderLoader = {() => (
-                        <View>
-                            <Video repeat={true} paused = {false} controls = {false}  style = {styles.video} source={require("../asset/video/loading-video.mp4") }/>
+                    {loading?(
+                        <Video repeat={true} paused = {false} controls = {false}  style = {styles.video} source={require("../asset/video/loading-video.mp4") }/>
 
-                        </View>)}
-                    repeat={true} style = {styles.video} source={{uri: url}}/>
+                    ):(
+                        <Video paused= {false} controls = {true} renderLoader = {() => (
+                            <View>
+                                <Video repeat={true} paused = {false} controls = {false}  style = {styles.video} source={require("../asset/video/loading-video.mp4") }/>
+    
+                            </View>)}
+                        repeat={true} style = {styles.video} source={{uri: history.video}}/>
+                    )}
+                    
                 </View>
                 <View style = {styles.containerDetail} >
 
@@ -34,9 +78,29 @@ function DetailScreen({route}){
                     <View>
                         <View style = {[styles.flexRow , styles.containerDetailItem]}>
                             <View>
-                                <MaterialIcons name="share-arrival-time" size={24} color= '#02A9F7' />
-                            </View>                         
-                            <Text style = {[styles.textDetailItem , styles.normalText]}><Text style = {styles.highlightText}>Thời gian </Text> {formatDate(timeStart)}</Text>
+                                <MaterialIcons name="timer" size={24} color= '#02A9F7' />
+                            </View>
+                            {loading?(
+                                <Text>Loading...</Text>
+
+                            ):(
+                                <Text style = {[styles.textDetailItem , styles.normalText]}><Text style = {styles.highlightText}>Bắt đầu </Text> {formatDate(history.beginTime)}</Text>
+
+                            )}                         
+                            
+                        </View>
+                        <View style = {[styles.flexRow , styles.containerDetailItem]}>
+                            <View>
+                                <MaterialIcons name="timer-off" size={24} color= '#02A9F7' />
+                            </View>
+                            {loading?(
+                                <Text>Loading...</Text>
+
+                            ):(
+                                <Text style = {[styles.textDetailItem , styles.normalText]}><Text style = {styles.highlightText}>Kết thúc </Text> {formatDate(history.endTime)}</Text>
+
+                            )}                         
+                            
                         </View>
                         <View style = {[styles.flexRow , styles.containerDetailItem]}>
                             <View>
