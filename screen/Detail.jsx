@@ -1,5 +1,5 @@
 import Video from "react-native-video";
-import { Text, View, StyleSheet , Pressable} from "react-native";
+import { Text, View, StyleSheet , Pressable, Alert} from "react-native";
 import MaterialIcons  from '@react-native-vector-icons/material-icons';
 import { useEffect, useState } from "react";
 import { formatDate } from "../Components/HistoryItem";
@@ -19,10 +19,26 @@ function DetailScreen({route}){
             console.log("token:", state.token);
             const url = `http://167.71.195.130/api/v1/detect/get?token=${state.token}&actionId=${uuid}`
             const response = await fetch(url, { method: 'GET'});
-            const data = await response.json();
-            setHistory(data);
-            console.log('History data: ', data);
-            setLoading(false);
+            if(response.ok){
+                const data = await response.json();
+                setHistory(data);
+                console.log('History data: ', data);
+                setLoading(false);
+            }else{
+                setLoading(true);
+                const errorData = await response.json();
+                Alert.alert(
+                    "Thông báo", 
+                    errorData.error, 
+                    [
+                        {
+                            text: 'OK', 
+                        }
+                    ]
+
+                );
+            }
+            
           }catch(error){
             console.log('Error', error);
             Alert.alert(

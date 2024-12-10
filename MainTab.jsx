@@ -5,9 +5,96 @@ import MainScreen from './screen/Main'; // Giữ nguyên tên file của bạn
 import HistoryScreen from './screen/History';
 import SettingScreen from './screen/SetUpScreen';
 
+import messaging from '@react-native-firebase/messaging';
+import { useEffect } from "react";
+import notifee, {AndroidImportance, EventType} from '@notifee/react-native';
+import { useAppContext } from './AppContext';
+import { Alert } from 'react-native';
+
+
 const BottomTabs = createBottomTabNavigator();
 
-function MainTabs() {
+function MainTabs({navigation}) {
+  const {state, setState} = useAppContext();
+
+  const getFcmToken = async () => {
+    const token = await messaging().getToken();
+    console.log("Token: ", token);
+    try{
+      const response = await fetch(`http://167.71.195.130/api/v1/auth/fcm?token=${state.token}&fcm_token=${token}`, 
+          {
+              method: 'POST', 
+          }
+      );
+      if(response.ok){
+        Alert.alert(
+          "Thông báo", 
+          "Cập nhật Firebase clound messaging thành công!", 
+          [
+            {
+              text: 'OK', 
+            }
+          ]
+        );
+      }else{
+          const errorData = await response.json();
+          Alert.alert(
+              "Thông báo", 
+              errorData.error, 
+              [
+                  {
+                      text: 'OK', 
+                      onPress: () => {
+                          navigation.navigate('Login');
+                      } 
+                  }
+              ]
+
+          );
+
+      }
+
+
+    }catch(error){
+      console.log("Error update fcm ", error);
+    }
+  }
+  useEffect(() => {
+      getFcmToken();
+  }, []);
+  useEffect(() => {
+      const unsubscribe = messaging().onMessage(async remoteMessage => {
+          const {title, body } = remoteMessage.notification;
+          displayNotification(title, body);
+      });
+
+      return unsubscribe;
+    }, []);
+  const displayNotification = async (title, body) => {
+      await notifee.requestPermission();
+
+      const channelId = await notifee.createChannel({
+          id: 'default', 
+          name: 'Default Channel', 
+          vibration: true, 
+          importance: AndroidImportance.HIGH, 
+          vibrationPattern: [300, 500]
+      });
+      await notifee.displayNotification({
+          title: title, 
+          body: body, 
+          android: {
+              channelId, 
+              importance: AndroidImportance.HIGH, 
+              pressAction: {
+                  id: 'default'
+              }
+          }
+      });
+  }
+
+
+
   return (
     <BottomTabs.Navigator
       screenOptions={{

@@ -22,9 +22,29 @@ function LoginScreen({navigation}){
                     })
                 }
             );
-            const data = await response.json();
-            setState({token: data.token});
-            navigation.navigate('Main');
+            if(response.ok){
+                const data = await response.json();
+                setState({token: data.token});
+                navigation.navigate('Main');
+            }else{
+                const errorData = await response.json();
+                Alert.alert(
+                    "Thông báo", 
+                    errorData.error, 
+                    [
+                        {
+                            text: 'OK', 
+                            onPress: () => {
+                                setPassword('');
+                                setUsername('');
+                            } 
+                        }
+                    ]
+
+                );
+
+            }
+            
 
         }catch(error){
             console.log('Error', error);

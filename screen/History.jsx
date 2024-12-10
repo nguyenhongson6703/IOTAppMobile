@@ -7,21 +7,70 @@ import { useEffect, useState } from "react";
 function HistoryScreen({navigation}){
     const {state, setState} = useAppContext();
     const [histories, setHistories] = useState([]);
+    const [cameraId, setCameraId] = useState('');
     function navigateToDetail(uuid){
       navigation.navigate('Detail', {
         uuid: uuid
       });
     }
     const [loading, setLoading] = useState(true);
+    const getCameraId = async () => {
+      try{
+
+        const url = `http://167.71.195.130/api/v1/camera/getall?token=${state.token}`
+        const response = await fetch(url, { method: 'GET'});
+        if(response.ok){
+          const data = await response.json();
+          console.log("List camera", data);
+          setCameraId(data[0].cameraId);
+        }else{
+          const errorData = await response.json();
+          Alert.alert(
+              "Thông báo", 
+              errorData.error, 
+              [
+                  {
+                      text: 'OK', 
+                      onPress: () => {
+                          navigation.navigate('Login');
+                      } 
+                  }
+              ]
+
+          );
+        }
+
+      }catch(error){
+        console.log('Error get camera id: ', error);
+        Alert.alert(
+          "Thông báo", 
+          "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!", 
+          [
+            {text: 'OK', 
+              onPress: () => {
+                navigation.navigate('Login');
+              }
+            }
+          ]
+        )
+      }
+    }
     const getAllHistories = async () => {
       try{
-        const cameraId = 'bbd39475'
         const url = `http://167.71.195.130/api/v1/detect/getall?token=${state.token}&cameraId=${cameraId}`
         const response = await fetch(url, { method: 'GET'});
-        const data = await response.json();
-        setHistories(data);
-        console.log('History data: ', histories);
-        setLoading(false);
+        
+        if(response.ok){
+          const data = await response.json();
+          setHistories(data);
+          console.log('History data: ', histories);
+          setLoading(false);
+        }else{
+          const errorData = await response.json();
+          console.log("Error Data Loading Histories", errorData.error);
+          setLoading(true);
+        }
+        
       }catch(error){
         console.log('Error', error);
         Alert.alert(
@@ -39,8 +88,11 @@ function HistoryScreen({navigation}){
       }
     }
     useEffect(() => {
-      getAllHistories();
+      getCameraId();
     }, []);
+    useEffect(() => {
+      getAllHistories();
+    }, [cameraId]);
     const renderItem = ({item}) => (
       <HistoryItem navigateToDetail={() => {navigateToDetail(item.uuid)}}
         urlImage={item.thumbnail} timeStart={item.beginTime} timeEnd={item.endTime} key={item.uuid}  />

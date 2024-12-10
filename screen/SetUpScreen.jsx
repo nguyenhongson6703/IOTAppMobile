@@ -7,18 +7,34 @@ import { useAppContext } from '../AppContext';
 
 function SettingScreen({navigation}){
     const {state, setState} = useAppContext();
-    const [isEnabled, setIsEnabled] = useState(false);
-    
-    const toggleSwitch = () => setIsEnabled(previousState => !previousState);
-
+    const [isEnabledMonitor, setIsEnabledMonitor] = useState(false);
+    const [isEnabledNotify, setIsEnableNotify] = useState(false);
     const [sensitivity, setSensitivity] = useState(0);
-    const getSensitivity = async () => {
+
+    const getSetting = async () => {
         try{
           
-            const url = `http://167.71.195.130/api/v1/auth/sensitivity?token=${state.token}`
+            const url = `http://167.71.195.130/api/v1/auth/getsettings?token=${state.token}`
             const response = await fetch(url, { method: 'GET'});
-            const data = await response.json();
-            setSensitivity(data.sensitivity);
+            if(response.ok){
+                const data = await response.json();
+                setIsEnabledMonitor(data.monitoring);
+                setIsEnableNotify(data.notification);
+                setSensitivity(data.sensitivity);
+            }else{
+                const errorData = await response.json();
+                Alert.alert(
+                    "Thông báo", 
+                    errorData.error, 
+                    [
+                        {
+                            text: 'OK', 
+                        }
+                    ]
+
+                );
+            }
+            
           }catch(error){
             console.log('Error', error);
             Alert.alert(
@@ -40,19 +56,32 @@ function SettingScreen({navigation}){
            
             const url = `http://167.71.195.130/api/v1/auth/sensitivity?token=${state.token}&sensitivity=${parseInt(newSensitivity)}`
             const response = await fetch(url, { method: 'POST'});
-            const data = await response.json();
-            setSensitivity(newSensitivity);
-            Alert.alert(
-                "Thông báo", 
-                "Thay đổi giá trị độ nhạy thành công" , 
-                [
-                    {
-                        text: 'OK', 
-                        onPress: () => {}
-                    }
-                ]
-            );
-            console.log("Message", data.message);
+            if(response.ok){
+                const data = await response.json();
+                setSensitivity(newSensitivity);
+                Alert.alert(
+                    "Thông báo", 
+                    "Thay đổi giá trị độ nhạy thành công" , 
+                    [
+                        {
+                            text: 'OK', 
+                            onPress: () => {}
+                        }
+                    ]
+                );
+            }else{
+                const errorData = await response.json();
+                Alert.alert(
+                    "Thông báo", 
+                    errorData.error, 
+                    [
+                        {
+                            text: 'OK', 
+                        }
+                    ]
+
+                );
+            }
           }catch(error){
             console.log('Error', error);
             Alert.alert(
@@ -69,8 +98,104 @@ function SettingScreen({navigation}){
     
           }
     }
+    const updateIsEnableMonitor = async () => {
+        const newValueMonitor = !isEnabledMonitor;
+        setIsEnabledMonitor(newValueMonitor);
+        try{
+            const url = `http://167.71.195.130/api/v1/auth/monitoring?token=${state.token}&monitoring=${newValueMonitor}`
+            const response = await fetch(url, { method: 'POST'});
+            if(response.ok){
+                const data = await response.json();
+                Alert.alert(
+                    "Thông báo", 
+                    "Cập nhật trạng thái giám sát thành công!" , 
+                    [
+                        {
+                            text: 'OK', 
+                            onPress: () => {}
+                        }
+                    ]
+                );
+            }else{
+                setIsEnabledMonitor(!newValueMonitor);  
+                const errorData = await response.json();
+                Alert.alert(
+                    "Thông báo", 
+                    errorData.error, 
+                    [
+                        {
+                            text: 'OK', 
+                        }
+                    ]
+
+                );
+            }
+
+        }catch(error){
+            console.log('Error', error);
+            Alert.alert(
+              "Thông báo", 
+              "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!", 
+              [
+                {text: 'OK', 
+                  onPress: () => {
+                    navigation.navigate('Login');
+                  }
+                }
+              ]
+            )
+        }
+    }
+    const updateIsEnableNotify = async () => {
+        const newValueNotify = !isEnabledNotify;
+        setIsEnableNotify(newValueNotify);
+        try{
+            const url = `http://167.71.195.130/api/v1/auth/notification?token=${state.token}&notification=${newValueNotify}`
+            const response = await fetch(url, { method: 'POST'});
+            if(response.ok){
+                const data = await response.json();
+                Alert.alert(
+                    "Thông báo", 
+                    "Cập nhật trạng thái thông báo thành công!" , 
+                    [
+                        {
+                            text: 'OK', 
+                            onPress: () => {}
+                        }
+                    ]
+                );
+            }else{
+                setIsEnableNotify(!newValueNotify) 
+                const errorData = await response.json();
+                Alert.alert(
+                    "Thông báo", 
+                    errorData.error, 
+                    [
+                        {
+                            text: 'OK', 
+                        }
+                    ]
+
+                );
+            }
+
+        }catch(error){
+            console.log('Error', error);
+            Alert.alert(
+              "Thông báo", 
+              "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!", 
+              [
+                {text: 'OK', 
+                  onPress: () => {
+                    navigation.navigate('Login');
+                  }
+                }
+              ]
+            )
+        }
+    }
     useEffect(() => {   
-        getSensitivity();
+        getSetting();
 
     }, [state.token]);
     function logoutHandler(){
@@ -117,10 +242,10 @@ function SettingScreen({navigation}){
                     <View style = {styles.containerSettingItemButton}>
                         <Switch
                             trackColor={{false: '#767577', true: '#81b0ff'}}
-                            thumbColor={isEnabled ? '#196cb2' : '#f4f3f4'}
+                            thumbColor={isEnabledMonitor ? '#196cb2' : '#f4f3f4'}
                             ios_backgroundColor="#3e3e3e"
-                            onValueChange={toggleSwitch}
-                            value={isEnabled}
+                            onValueChange={updateIsEnableMonitor}
+                            value={isEnabledMonitor}
                             />
                     </View>
                     
@@ -132,10 +257,10 @@ function SettingScreen({navigation}){
                     <View style = {styles.containerSettingItemButton}>  
                         <Switch
                             trackColor={{false: '#767577', true: '#81b0ff'}}
-                            thumbColor={isEnabled ? '#196cb2' : '#f4f3f4'}
+                            thumbColor={isEnabledNotify ? '#196cb2' : '#f4f3f4'}
                             ios_backgroundColor="#3e3e3e"
-                            onValueChange={toggleSwitch}
-                            value={isEnabled}
+                            onValueChange={updateIsEnableNotify}
+                            value={isEnabledNotify}
                             />
 
                     </View>
