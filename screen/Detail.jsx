@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import { formatDate } from "../Components/HistoryItem";
 import { useAppContext } from "../AppContext";
 
-
 function DetailScreen({route}){
     const {state, setState} = useAppContext();
     const {uuid} = route.params; 
@@ -24,6 +23,7 @@ function DetailScreen({route}){
                 setHistory(data);
                 console.log('History data: ', data);
                 setLoading(false);
+                
             }else{
                 setLoading(true);
                 const errorData = await response.json();
@@ -77,12 +77,14 @@ function DetailScreen({route}){
                         <Video repeat={true} paused = {false} controls = {false}  style = {styles.video} source={require("../asset/video/loading-video.mp4") }/>
 
                     ):(
-                        <Video paused= {false} controls = {true} renderLoader = {() => (
+                        <Video paused= {false} controls = {true} 
+                        renderLoader = {() => (
                             <View>
                                 <Video repeat={true} paused = {false} controls = {false}  style = {styles.video} source={require("../asset/video/loading-video.mp4") }/>
     
                             </View>)}
                         repeat={true} style = {styles.video} source={{uri: history.video}}/>
+
                     )}
                     
                 </View>

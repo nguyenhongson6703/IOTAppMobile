@@ -6,14 +6,16 @@ import Video from "react-native-video";
 
 // const videoSource =
 //   'https://skynewsau-live.akamaized.net/hls/live/2002689/skynewsau-extra1/master.m3u8';
-const videoSource =
-  'http://167.71.195.130:8088/hls/stream1.m3u8';
+// const videoSource =
+//   'http://167.71.195.130:8088/hls/stream2.m3u8';
+
 
 function MainScreen({navigation}){
     const [loading, setLoading] = useState(true);
     const handleOnLoad = () => {
       setLoading(false);
     }
+    const [videoSource, setVideoSource] = useState("http://167.71.195.130:8088/hls/stream2.m3u8");
 
     return (
         <View style = {styles.rootContainer}>
@@ -27,8 +29,8 @@ function MainScreen({navigation}){
             <View style={styles.contentContainer}>
             {loading===true ? (
               <Video
+              paused={false}
                 repeat={true}
-                paused={false}
                 controls={false}
                 style={styles.video}
                 source={require("../asset/video/loading-video.mp4")}
@@ -40,25 +42,35 @@ function MainScreen({navigation}){
                 style={[loading ?{width: 0 , height: 0}:styles.video]}
                 source={{ uri: videoSource }}
                 onError={(error) => {
+                  console.log("Error loading stream: ", error);
                   setTimeout(() => {
-                    Alert.alert(
-                      "Thông báo",
-                      "Lỗi khi phát luồng trực tiếp. Hãy thử lại.",
-                      [
-                        {
-                          text: "OK",
-                          onPress: () => {
-                            navigation.navigate("Setting");
-                          },
-                        },
-                      ],
-                      { cancelable: false }
-                    );
-                  }, 500); // Thêm một khoảng trễ nhỏ
-                  navigation.navigate("Setting");
+                    setVideoSource('http://167.71.195.130:8088/hls/stream2.m3u8');
+                  }, 4000);
+                  setVideoSource('https://skynewsau-live.akamaized.net/hls/live/2002689/skynewsau-extra1/master.m3u8');
+                  // setTimeout(() => {
+                  //   Alert.alert(
+                  //     "Thông báo",
+                  //     "Lỗi khi phát luồng trực tiếp. Hãy thử lại.",
+                  //     [
+                  //       {
+                  //         text: "OK",
+                  //         onPress: () => {
+                  //           navigation.navigate("Setting");
+                  //         },
+                  //       },
+                  //     ],
+                  //     { cancelable: false }
+                  //   );
+                  // }, 2000); // Thêm một khoảng trễ nhỏ
+                  //navigation.navigate("Setting");
                 }
 
                 }
+                initOptions={[
+                  '--network-caching=1000', // Cache 1s để cải thiện ổn định
+                  '--rtsp-tcp', // Bắt buộc sử dụng TCP cho RTSP
+                  '--http-reconnect', // Tự động kết nối lại khi bị gián đoạn
+                ]}
               />
             </View>
         </View>
@@ -91,7 +103,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         paddingHorizontal: 50,
-        elevation: 4
+        elevation: 4,
+        borderColor: 'red', 
+        borderWidth: 1
       },
       video: {
         width: 350,
